@@ -1,5 +1,6 @@
 package study.querydsl;
 
+import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,8 @@ import study.querydsl.entity.QMember;
 import study.querydsl.entity.Team;
 
 import javax.persistence.EntityManager;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 import static study.querydsl.entity.QMember.member;
@@ -72,5 +75,61 @@ public class QuerydslBasicTest {
 
         // then
         assertThat(findMember.getUsername()).isEqualTo("member1");
+    }
+    @Test
+    public void search() throws Exception {
+        // 이름이 "member1" 이고, 10살인 사람 검색
+
+        // when
+        Member findMember = queryFactory
+                .selectFrom(member) // selelct와 from 나눠도 됨
+                .where(member.username.eq("member1")
+                        .and(member.age.eq(10))) // or도 가능
+                .fetchOne();
+        // then
+        assertThat(findMember.getUsername()).isEqualTo("member1");
+        assertThat(findMember.getAge()).isEqualTo(10);
+    }
+
+    @Test
+    public void searchAndParams() throws Exception {
+        // and는 파라미터로 넣어주기만 하면 알아서 조립됨.
+
+        // when
+        Member findMember = queryFactory
+                .selectFrom(member)
+                .where(member.username.eq("member1"),
+                        (member.age.eq(10)))
+                .fetchOne();
+        // then
+        assertThat(findMember.getUsername()).isEqualTo("member1");
+        assertThat(findMember.getAge()).isEqualTo(10);
+    }
+
+    @Test
+    public void resultQuery()throws Exception {
+
+        //List
+        List<Member> fetch = queryFactory
+                .selectFrom(member)
+                .fetch();
+        //단 건
+        Member findMember1 = queryFactory
+                .selectFrom(member)
+                .fetchOne();
+        //처음 한 건 조회
+        Member findMember2 = queryFactory
+                .selectFrom(member)
+                .fetchFirst();
+        //페이징에서 사용
+        QueryResults<Member> results = queryFactory
+                .selectFrom(member)
+                .fetchResults();
+        //count 쿼리로 변경
+        long count = queryFactory
+                .selectFrom(member)
+                .fetchCount();
+
+        // then
     }
 }
