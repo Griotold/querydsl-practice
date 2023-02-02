@@ -160,4 +160,17 @@ public class QuerydslBasicTest {
 
         // then
     }
+    @Test
+    public void paging1() throws Exception {
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .orderBy(member.username.desc())
+                .offset(1) //0부터 시작(zero index)
+                .limit(2) //최대 2건 조회
+                .fetch();
+        assertThat(result.size()).isEqualTo(2);
+
+
+        // then
+    }
 }
