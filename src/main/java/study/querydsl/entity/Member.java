@@ -21,17 +21,21 @@ public class Member {
     private Team team;
 
     // setter 말고 생성자로 만들자
+    // 1
     public Member(String username) {
-        this.username = username;
+        this(username, 0); // 2번 생성자 호출
     }
-
+    // 2
+    public Member(String username, int age) {
+        this(username, age, null); // 3번 생성자 호출
+    }
+    // 3
     public Member(String username, int age, Team team) {
         this.username = username;
         this.age = age;
-        if(team != null){
-            changeTeam(team); // team이 null이어도 무시하기
+        if (team != null) {
+            changeTeam(team);
         }
-
     }
 
     // 이름 바꾸기 메소드
