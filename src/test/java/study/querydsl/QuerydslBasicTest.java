@@ -543,4 +543,43 @@ public class QuerydslBasicTest {
 
         // then
     }
+
+    /**
+     * 중급 문법 시작
+     * 단일 프로젝션
+     * */
+    @Test
+    public void simpleProjection() throws Exception {
+        // when
+        List<Member> result = queryFactory
+                .select(member)
+                .from(member)
+                .fetch();
+        // then
+        for (Member member : result) {
+            System.out.println("member = " + member);
+        }
+    }
+    /**
+     * 튜플 프로젝션
+     * 유저네임과 나이를 가져오기
+     * */
+    @Test
+    public void tupleProjection() throws Exception {
+        // when
+        List<Tuple> result = queryFactory
+                .select(member.username, member.age)
+                .from(member)
+                .fetch();
+
+        for (Tuple tuple : result) {
+            String username = tuple.get(member.username);
+            Integer age = tuple.get(member.age);
+            System.out.println("username = " + username);
+            System.out.println("age = " + age);
+        }
+
+        // then
+    }
+
 }
