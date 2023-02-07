@@ -18,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 import study.querydsl.dto.MemberDto;
 import study.querydsl.dto.QMemberDto;
@@ -786,5 +787,57 @@ public class QuerydslBasicTest {
 
     private BooleanExpression allEq(String usernameCond, Integer ageCond) {
         return usernameEq(usernameCond).and(ageEq(ageCond));
+    }
+    /**
+     * 수정, 삭제 벌크 연산
+     * */
+    // 28살 이하의 회원 이름을 "비회원"으로 바꾸기
+    @Test
+    @Commit // 롤백을 막고 커밋 쳐주기 위해
+    public void bulkUpdate() throws Exception {
+        // long 반환타입은 영향 받은 row수를 의미
+        long count = queryFactory
+                .update(member)
+                .set(member.username, "비회원")
+                .where(member.age.lt(28))
+                .execute();
+
+        // 벌크 연산 이후 무조건 영속성 컨텍스트를 비워준다.
+        em.flush();
+        em.clear();
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .fetch();
+        for (Member member : result) {
+            System.out.println("member = " + member);
+        }
+    }
+    // 모든 회원의 나이 + 1
+    @Test
+    public void bulkAdd() throws Exception {
+        // 빼주고 싶으면 add(-1)
+        long cnt = queryFactory
+                .update(member)
+                .set(member.age, member.age.add(1))
+                .execute();
+
+    }
+    // 모든 회원의 나이 * 2
+    @Test
+    public void bulkMultiply()throws Exception {
+        queryFactory
+                .update(member)
+                .set(member.age, member.age.multiply(2))
+                .execute();
+    }
+
+    // 18살 미만 회원 삭제
+    @Test
+    public void bulkDelete() throws Exception {
+        queryFactory
+                .delete(member)
+                .where(member.age.lt(18))
+                .execute();
     }
 }
