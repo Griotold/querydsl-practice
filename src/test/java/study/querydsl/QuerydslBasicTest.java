@@ -793,7 +793,7 @@ public class QuerydslBasicTest {
      * */
     // 28살 이하의 회원 이름을 "비회원"으로 바꾸기
     @Test
-    @Commit // 롤백을 막고 커밋 쳐주기 위해
+//    @Commit // 롤백을 막고 커밋 쳐주기 위해
     public void bulkUpdate() throws Exception {
         // long 반환타입은 영향 받은 row수를 의미
         long count = queryFactory
@@ -839,5 +839,37 @@ public class QuerydslBasicTest {
                 .delete(member)
                 .where(member.age.lt(18))
                 .execute();
+    }
+
+    /**
+     * SQL function 호출하기
+     * */
+    // 회원 이름의 member를 M으로 바꿔서 출력하기 : replace함수 호출
+    @Test
+    public void callReplace() throws Exception {
+        List<String> result = queryFactory
+                .select(Expressions.stringTemplate("function('replace', {0}, {1}, {2})",
+                        member.username, "member", "M"))
+                .from(member)
+                .fetch();
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
+    }
+    // lower함수 호출 : ANSI 표준에 있는 함수
+    // 소문자로 만드는 함수
+    @Test
+    public void sqlLower() throws Exception {
+        List<String> result = queryFactory
+                .select(member.username)
+                .from(member)
+//                .where(member.username.eq(
+//                        Expressions.stringTemplate("function('lower', {0})", member.username)))
+                .where(member.username.eq(member.username.lower()))
+                .fetch();
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
+
     }
 }
