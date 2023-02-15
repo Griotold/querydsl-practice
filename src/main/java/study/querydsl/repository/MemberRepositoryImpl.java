@@ -2,10 +2,12 @@ package study.querydsl.repository;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils; // 패키지 변경
 import org.springframework.util.StringUtils;
 import study.querydsl.dto.MemberSearchCondition;
 import study.querydsl.dto.MemberTeamDto;
@@ -85,16 +87,19 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom{
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
-        int total = queryFactory
-                .selectFrom(member)
+        JPAQuery<Long> countQuery = queryFactory
+                .select(member.count())
+                .from(member)
+                .leftJoin(member.team, team)
                 .where(usernameEq(condition.getUsername()),
                         teamNameEq(condition.getTeamName()),
                         ageGoe(condition.getAgeGoe()),
-                        ageLoe(condition.getAgeLoe()))
-                .fetch().size();
+                        ageLoe(condition.getAgeLoe()));
         // 쿼리 결과로 페이징 객체 리턴 
         // PageImpl은 스프링 데이터의 Page<T>의 구현체
-        return new PageImpl<>(content, pageable, total);
+        // return new PageImpl<>(content, pageable, total);
+        // return PageableExecutionUtils.getPage(content, pageable, () -> countQuery.fetchOne() );
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
     @Override
